@@ -1,9 +1,13 @@
 pipeline {
     // 1. AGENTE: Dónde se ejecutará el pipeline.
     // Se usa un agente de Docker para crear un entorno de construcción limpio y predecible.
-    // La imagen 'python:3.9-slim-buster' ya contiene 'python' y 'pip'.
     agent {
         docker { image 'python:3.9-slim-buster' }
+    }
+
+    // Se define el entorno explícitamente para asegurar que los plugins encuentren los comandos.
+    environment {
+        PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
     }
 
     // 2. ETAPAS (STAGES): Los pasos lógicos del proceso.
