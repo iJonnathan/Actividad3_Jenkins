@@ -1,17 +1,18 @@
 pipeline {
     // 1. AGENTE: Dónde se ejecutará el pipeline.
-    // Se usa 'agent any' para que se ejecute en cualquier agente disponible.
-    agent any
+    // Se usa un agente de Docker para crear un entorno de construcción limpio y predecible.
+    // La imagen 'python:3.9-slim-buster' ya contiene 'python' y 'pip'.
+    agent {
+        docker { image 'python:3.9-slim-buster' }
+    }
 
     // 2. ETAPAS (STAGES): Los pasos lógicos del proceso.
     stages {
-        // La etapa 'Source' es manejada automáticamente por Jenkins.
-
         // Etapa de construcción.
         stage('Build') {
             steps {
                 echo 'Instalando dependencias...'
-                // Se ejecuta el comando directamente para no depender de 'make'.
+                // Este comando se ejecutará dentro del contenedor de Docker.
                 sh 'pip install -r requirements.txt'
             }
         }
@@ -20,8 +21,8 @@ pipeline {
         stage('Unit tests') {
             steps {
                 echo 'Ejecutando pruebas unitarias...'
-                // Se crean los directorios y se ejecuta pytest directamente.
                 sh 'mkdir -p results'
+                // pytest fue instalado en la etapa anterior, por lo que está disponible.
                 sh 'pytest --junitxml=results/unit_test_result.xml test/unit/'
             }
         }
@@ -47,29 +48,17 @@ pipeline {
 
     // 3. ACCIONES POST-EJECUCIÓN (POST): Tareas de limpieza y reporte.
     post {
-        // Se ejecuta siempre, independientemente del resultado (éxito o fallo).
         always {
             echo 'Archivando y publicando informes...'
-            
-            // Archiva los XML generados para su posterior análisis.
             archiveArtifacts artifacts: 'results/*.xml', fingerprint: true
-
-            // Usa el plugin JUnit para procesar los XML y mostrar gráficos de resultados.
             junit 'results/*_result.xml'
-
-            // Limpia el espacio de trabajo para mantener Jenkins ordenado.
             cleanWs()
         }
-        
-        // Se ejecuta solo si el pipeline falla.
         failure {
             echo "¡El pipeline ha fallado! Enviando notificación..."
-            
-            // Simulación del envío de correo.
             echo "Notificación de fallo para el job: ${env.JOB_NAME}, ejecución #${env.BUILD_NUMBER}."
-
             /*
-            // Código real para el envío de correo (requiere configuración del plugin).
+            // Código real para el envío de correo.
             mail to: 'tu.correo@example.com',
                  subject: "FALLO en el Job: ${env.JOB_NAME} [Build #${env.BUILD_NUMBER}]",
                  body: "La ejecución #${env.BUILD_NUMBER} del job ${env.JOB_NAME} ha fallado. Revisa la consola: ${env.BUILD_URL}"
