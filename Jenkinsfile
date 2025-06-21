@@ -2,7 +2,11 @@ pipeline {
     // 1. AGENTE: Dónde se ejecutará el pipeline.
     // Se usa un agente de Docker para crear un entorno de construcción limpio y predecible.
     agent {
-        docker { image 'python:3.9-slim-buster' }
+        docker { 
+            image 'python:3.9-slim-buster' 
+            // Se fuerza la ejecución como usuario root para evitar problemas de permisos.
+            args '-u root'
+        }
     }
 
     // 2. ETAPAS (STAGES): Los pasos lógicos del proceso.
@@ -10,44 +14,35 @@ pipeline {
         // Etapa de construcción.
         stage('Build') {
             steps {
-                // Nos aseguramos de estar en el directorio del proyecto
-                dir(workspace) {
-                    echo 'Instalando dependencias...'
-                    sh 'pip install -r requirements.txt'
-                }
+                echo 'Instalando dependencias...'
+                sh 'pip install -r requirements.txt'
             }
         }
 
         // Etapa de pruebas unitarias.
         stage('Unit tests') {
             steps {
-                dir(workspace) {
-                    echo 'Ejecutando pruebas unitarias...'
-                    sh 'mkdir -p results'
-                    sh 'pytest --junitxml=results/unit_test_result.xml test/unit/'
-                }
+                echo 'Ejecutando pruebas unitarias...'
+                sh 'mkdir -p results'
+                sh 'pytest --junitxml=results/unit_test_result.xml test/unit/'
             }
         }
         
         // Etapa de pruebas de API.
         stage('API tests') {
             steps {
-                dir(workspace) {
-                    echo 'Ejecutando pruebas de API...'
-                    sh 'mkdir -p results'
-                    sh 'pytest --junitxml=results/api_test_result.xml test/rest/'
-                }
+                echo 'Ejecutando pruebas de API...'
+                sh 'mkdir -p results'
+                sh 'pytest --junitxml=results/api_test_result.xml test/rest/'
             }
         }
 
         // Etapa de pruebas E2E.
         stage('E2E tests') {
             steps {
-                dir(workspace) {
-                    echo 'Ejecutando pruebas End-to-End...'
-                    sh 'mkdir -p results'
-                    sh 'echo "<?xml version=\'1.0\' encoding=\'UTF-8\'?><testsuite name=\'e2e_tests\' tests=\'1\' failures=\'0\' errors=\'0\' skipped=\'1\'><testcase name=\'no_e2e_tests_defined\'><skipped/></testcase></testsuite>" > results/e2e_test_result.xml'
-                }
+                echo 'Ejecutando pruebas End-to-End...'
+                sh 'mkdir -p results'
+                sh 'echo "<?xml version=\'1.0\' encoding=\'UTF-8\'?><testsuite name=\'e2e_tests\' tests=\'1\' failures=\'0\' errors=\'0\' skipped=\'1\'><testcase name=\'no_e2e_tests_defined\'><skipped/></testcase></testsuite>" > results/e2e_test_result.xml'
             }
         }
     }
