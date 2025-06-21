@@ -10,37 +10,44 @@ pipeline {
         // Etapa de construcción.
         stage('Build') {
             steps {
-                echo 'Instalando dependencias...'
-                // Este comando se ejecutará dentro del contenedor de Docker.
-                sh 'pip install -r requirements.txt'
+                // Nos aseguramos de estar en el directorio del proyecto
+                dir(workspace) {
+                    echo 'Instalando dependencias...'
+                    sh 'pip install -r requirements.txt'
+                }
             }
         }
 
         // Etapa de pruebas unitarias.
         stage('Unit tests') {
             steps {
-                echo 'Ejecutando pruebas unitarias...'
-                sh 'mkdir -p results'
-                // pytest fue instalado en la etapa anterior, por lo que está disponible.
-                sh 'pytest --junitxml=results/unit_test_result.xml test/unit/'
+                dir(workspace) {
+                    echo 'Ejecutando pruebas unitarias...'
+                    sh 'mkdir -p results'
+                    sh 'pytest --junitxml=results/unit_test_result.xml test/unit/'
+                }
             }
         }
         
         // Etapa de pruebas de API.
         stage('API tests') {
             steps {
-                echo 'Ejecutando pruebas de API...'
-                sh 'mkdir -p results'
-                sh 'pytest --junitxml=results/api_test_result.xml test/rest/'
+                dir(workspace) {
+                    echo 'Ejecutando pruebas de API...'
+                    sh 'mkdir -p results'
+                    sh 'pytest --junitxml=results/api_test_result.xml test/rest/'
+                }
             }
         }
 
         // Etapa de pruebas E2E.
         stage('E2E tests') {
             steps {
-                echo 'Ejecutando pruebas End-to-End...'
-                sh 'mkdir -p results'
-                sh 'echo "<?xml version=\'1.0\' encoding=\'UTF-8\'?><testsuite name=\'e2e_tests\' tests=\'1\' failures=\'0\' errors=\'0\' skipped=\'1\'><testcase name=\'no_e2e_tests_defined\'><skipped/></testcase></testsuite>" > results/e2e_test_result.xml'
+                dir(workspace) {
+                    echo 'Ejecutando pruebas End-to-End...'
+                    sh 'mkdir -p results'
+                    sh 'echo "<?xml version=\'1.0\' encoding=\'UTF-8\'?><testsuite name=\'e2e_tests\' tests=\'1\' failures=\'0\' errors=\'0\' skipped=\'1\'><testcase name=\'no_e2e_tests_defined\'><skipped/></testcase></testsuite>" > results/e2e_test_result.xml'
+                }
             }
         }
     }
