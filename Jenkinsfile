@@ -5,11 +5,6 @@ pipeline {
         docker { image 'python:3.9-slim-buster' }
     }
 
-    // Se define el entorno explícitamente para asegurar que los plugins encuentren los comandos.
-    environment {
-        PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-    }
-
     // 2. ETAPAS (STAGES): Los pasos lógicos del proceso.
     stages {
         // Etapa de construcción.
