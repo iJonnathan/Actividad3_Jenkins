@@ -59,12 +59,6 @@ pipeline {
         failure {
             echo "¡El pipeline ha fallado! Enviando notificación..."
             echo "Notificación de fallo para el job: ${env.JOB_NAME}, ejecución #${env.BUILD_NUMBER}."
-            /*
-            // Código real para el envío de correo.
-            mail to: 'tu.correo@example.com',
-                 subject: "FALLO en el Job: ${env.JOB_NAME} [Build #${env.BUILD_NUMBER}]",
-                 body: "La ejecución #${env.BUILD_NUMBER} del job ${env.JOB_NAME} ha fallado. Revisa la consola: ${env.BUILD_URL}"
-            */
         }
     }
 }
